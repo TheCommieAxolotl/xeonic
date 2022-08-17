@@ -1,5 +1,5 @@
 # ⚡ Xeonic
-A simple, fast, and tiny Library for spa-style routing and hydration between pages.
+A simple, fast, and tiny Library for spa-style routing for static sites.
 
 ## Usage
 ```bash
