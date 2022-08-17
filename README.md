@@ -20,6 +20,25 @@ initialiseRouter();
 
 ...and that's it!
 
+## Features
+Even though xeonic is similar to many other libraries, it has some other features.
+
+### Opt-In Elements
+*Any* element can be used as a xeonic link, not just anchor tags.
+```html
+<div xeon-include href="/homepage">Hey, I'm a link now!</div>
+```
+All you need to do is add the `xeon-include` and `href` attributes to the element.
+
+### Independent History
+Xeonic stores its own history in `window.Xeonic.history`.
+You can pop or push pages with 
+```js
+Xeonic.goBack()
+Xeonic.goForward()
+Xeonic.goTo("url")
+```
+
 ## Configuration
 ```js
 import { initialiseRouter } from 'xeonic';
@@ -31,8 +50,8 @@ initialiseRouter({
 ```
 
 ## TODO
-- [ ] Add listenable navigation events
-- [ ] Add ability to navigate back and forward
+- [x] Add listenable navigation events
+- [x] Add ability to navigate back and forward
 - [ ] Add a `mergeHead` option to merge the heads of documents and not replace them
 
 ## Inspiration

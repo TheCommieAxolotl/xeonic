@@ -1,72 +1,101 @@
-var d = Object.defineProperty;
-var f = (r, t, e) => t in r ? d(r, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : r[t] = e;
-var c = (r, t, e) => (f(r, typeof t != "symbol" ? t + "" : t, e), e);
-const a = (r) => {
-  const t = new DOMParser().parseFromString(r, "text/html"), e = t.querySelector("body"), o = document.querySelector("body");
-  o.innerHTML = e.innerHTML;
-  const n = t.querySelector("head"), i = document.querySelector("head");
-  i.innerHTML = n.innerHTML, window.Xeonic && window.Xeonic.prefetchLinks();
-}, s = (r) => {
-  const t = r.hasAttribute("xeon-ignore"), e = new URL(r.href), o = e.hostname == window.Xeonic.siteInfo.hostname, n = !o, i = !!window.Xeonic.cachedLinks[e.href];
+var l = Object.defineProperty;
+var f = (i, t, e) => t in i ? l(i, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : i[t] = e;
+var r = (i, t, e) => (f(i, typeof t != "symbol" ? t + "" : t, e), e);
+const s = (i) => {
+  const t = new DOMParser().parseFromString(i, "text/html"), e = new CustomEvent("xeon:navigated", {}), n = t.querySelector("body"), c = document.querySelector("body");
+  c.innerHTML = n.innerHTML;
+  const o = t.querySelector("head"), a = document.querySelector("head");
+  a.innerHTML = o.innerHTML, window.dispatchEvent(e), window.Xeonic && window.Xeonic.prefetchLinks();
+}, d = (i) => {
+  const t = i.hasAttribute("xeon-ignore"), e = new URL(i.href || i.getAttribute("href")), n = e.hostname == window.Xeonic.siteInfo.hostname, c = !n, o = !!window.Xeonic.cachedLinks[e.href];
   return {
     ignored: t,
     fullURL: e,
-    local: o,
-    external: n,
-    prefetched: i
+    local: n,
+    external: c,
+    prefetched: o
   };
 };
-class l {
+class w {
   constructor() {
-    c(this, "config", {});
-    c(this, "siteInfo", {
+    r(this, "config", {});
+    r(this, "siteInfo", {
       hostname: location.hostname,
       protocol: location.protocol,
       pathname: location.pathname,
       port: location.port,
       href: location.href
     });
-    c(this, "cachedLinks", {});
-    c(this, "prefetchLinks", async () => {
+    r(this, "cachedLinks", {});
+    r(this, "history", []);
+    r(this, "activeIndex", 0);
+    r(this, "prefetchLinks", async () => {
       const t = document.querySelectorAll("a[href], [xeon-include]");
       for (let e = 0; e < t.length; e++) {
-        const o = s(t[e]);
-        if (o.ignored || o.external && this.config.ignoreExternal || o.prefetched)
+        const n = d(t[e]);
+        if (n.ignored || n.external && this.config.ignoreExternal || n.prefetched)
           return;
-        this.cachedLinks[t[e].href] = await fetch(t[e].href).then(
-          async (n) => await n.text()
-        ), this.config.logs && console.log(`\u26A1 - Prefetched ${t[e].href}`);
+        this.cachedLinks[n.fullURL.href] = await fetch(n.fullURL.href).then(
+          async (c) => await c.text()
+        ), this.config.logs && console.log(`\u26A1 - Prefetched ${n.fullURL.href}`);
       }
     });
-    c(this, "goBack", () => {
-      window.history.back();
+    r(this, "goBack", () => {
+      const t = this.history[this.activeIndex - 1], e = new CustomEvent("xeon:back", {
+        detail: t
+      });
+      return this.config.logs && console.log("\u26A1 - Going back"), t ? (this.activeIndex--, window.dispatchEvent(e), this.goTo(t)) : (window.dispatchEvent(e), window.history.back());
     });
-    c(this, "goForward", () => {
-      window.history.forward();
+    r(this, "goForward", () => {
+      const t = this.history[this.activeIndex + 1], e = new CustomEvent("xeon:forward", {
+        detail: t
+      });
+      return this.config.logs && console.log("\u26A1 - Going forward"), t ? (this.activeIndex++, window.dispatchEvent(e), this.goTo(t)) : (window.dispatchEvent(e), window.history.forward());
     });
-    c(this, "goTo", async (t) => {
-      const e = new URL(t);
+    r(this, "goTo", async (t) => {
+      const e = new URL(t), n = new CustomEvent("xeon:will-navigate", {
+        detail: data.fullURL.href
+      });
       return this.cachedLinks[e.href] = await fetch(e.href).then(
-        async (o) => await o.text()
-      ), this.config.logs && console.log(`\u26A1 - Routed to ${e.href}`), a(this.cachedLinks[e.href]);
+        async (c) => await c.text()
+      ), this.config.logs && console.log(`\u26A1 - Routed to ${e.href}`), this.activeIndex++, this.history.push(window.location.href), window.dispatchEvent(n), s(this.cachedLinks[e.href]);
     });
+    this.history.push(this.siteInfo.href);
   }
 }
-const u = (r = {}) => {
-  const { ignoreExternal: t = !0, prefetch: e = !0, logs: o = !1 } = r;
-  return window.Xeonic = new l(), window.Xeonic.config = {
+const g = (i = {}) => {
+  const { ignoreExternal: t = !0, prefetch: e = !0, logs: n = !1 } = i;
+  return window.Xeonic = new w(), window.Xeonic.config = {
     ignoreExternal: t,
     prefetch: e,
-    logs: o
-  }, e && window.Xeonic.prefetchLinks(), window.addEventListener("click", async (n) => {
-    if (n.target.tagName === "A" || n.target.hasAttribute("xeon-include")) {
-      const i = s(n.target);
-      return i.ignored || i.external && t ? void 0 : (n.preventDefault(), i.prefetched ? a(window.Xeonic.cachedLinks[i.fullURL.href]) : (window.Xeonic.cachedLinks[n.target.href] = await fetch(
-        n.target.href
-      ).then(async (h) => await h.text()), o && console.log(`\u26A1 - Routed to ${n.target.href}`), a(window.Xeonic.cachedLinks[n.target.href])));
+    logs: n
+  }, e && window.Xeonic.prefetchLinks(), window.addEventListener("click", async (c) => {
+    if (c.target.tagName === "A" || c.target.hasAttribute("xeon-include")) {
+      const o = d(c.target);
+      if (o.ignored || o.external && t)
+        return;
+      c.preventDefault(), window.addEventListener(
+        "xeon:navigate",
+        function(h) {
+          console.log(h);
+        },
+        !1
+      );
+      const a = new CustomEvent("xeon:will-navigate", {
+        detail: o.fullURL.href
+      });
+      return window.dispatchEvent(a), o.prefetched ? (window.Xeonic.activeIndex++, window.Xeonic.history.push(o.fullURL.href), n && console.log(`\u26A1 - Routed to ${o.fullURL.href}`), s(window.Xeonic.cachedLinks[o.fullURL.href])) : (window.Xeonic.cachedLinks[o.fullURL.href] = await fetch(
+        o.fullURL.href
+      ).then(async (h) => await h.text()), window.Xeonic.activeIndex++, window.Xeonic.history.push(o.fullURL.href), n && console.log(`\u26A1 - Routed to ${o.fullURL.href}`), s(window.Xeonic.cachedLinks[o.fullURL.href]));
     }
-  }), window.addEventListener("popstate", (n) => (n.preventDefault(), o && console.log(`\u26A1 - Routed to ${window.location.href}`), a(window.Xeonic.cachedLinks[window.location.href]))), window.Xeonic;
+  }), window.addEventListener("popstate", (c) => {
+    c.preventDefault();
+    const o = new CustomEvent("xeon:will-navigate", {
+      detail: data.fullURL.href
+    });
+    return window.dispatchEvent(o), window.Xeonic.activeIndex++, window.Xeonic.history.push(window.location.href), n && console.log(`\u26A1 - Routed to ${window.location.href}`), s(window.Xeonic.cachedLinks[window.location.href]);
+  }), window.Xeonic;
 };
 export {
-  u as initialiseRouter
+  g as initialiseRouter
 };
