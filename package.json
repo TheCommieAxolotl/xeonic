@@ -1,0 +1,32 @@
+{
+  "name": "xeonic",
+  "version": "1.0.1",
+  "description": "A simple, fast, and tiny Library for spa-style routing and hydration between pages.",
+  "main": "dist/xeonic.js",
+  "module": "dist/xeonic.mjs",
+  "exports": {
+    "node": {
+      "import": "./dist/xeonic.mjs",
+      "require": "./dist/xeonic.js"
+    },
+    "default": "./dist/xeonic.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheCommieAxolotl/xeonic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheCommieAxolotl/xeonic/issues"
+  },
+  "homepage": "https://github.com/TheCommieAxolotl/xeonic#readme",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "TheCommieAxolotl",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^3.0.8"
+  }
+}
