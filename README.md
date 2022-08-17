@@ -13,7 +13,7 @@ initialiseRouter();
 
 ```html
 <script type="module">
-    import { initialiseRouter } from 'xeonic';
+    import { initialiseRouter } from '/path/to/xeonic.mjs';
     initialiseRouter();
 </script>
 ```
